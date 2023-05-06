@@ -1,27 +1,68 @@
 <template>
-  <div>
-    <h1>Jogo de Perguntas e Respostas, utilizando Vue Js</h1>
+  <template v-if="this.pergunta">
 
-    <h2>Pergunta:</h2>
+    <h1 v-html="this.pergunta"></h1>
 
-    <input type="radio" name="opcoes" value="true" />
-    <label>Verdadeiro</label><br>
+    <template v-for="(resposta, index) in this.respostas" :key="index">
+      <input type="radio" name="opcoes" :value="resposta" v-model="this.respostaSelecionada"/>
+      <label v-html="resposta"></label><br>
+    </template>
 
-    <input type="radio" name="opcoes" value="false" />
-    <label>Falso</label><br>
+    <button @click="this.enviarResposta" class="salvar" type="button">Enviar</button>
 
-    <button class="salvar" type="button">Enviar</button>
-
-  </div>
+  </template>
 </template>
 
 <script>
 
 export default {
   name: 'App',
-  components: {
 
+  data() {
+    return {
+      pergunta: undefined,
+      respostasIncorretas: undefined,
+      respostaCorreta: undefined,
+      respostaSelecionada: undefined
+    }
+  },
+
+  computed: {
+    respostas() {
+      var respostas = JSON.parse(JSON.stringify(this.respostasIncorretas));
+      respostas.splice(Math.round(Math.random() * respostas.length), 0, this.respostaCorreta);
+      return respostas;
+    }
+  },
+
+  methods:{
+    enviarResposta(){
+      if(!this.respostaSelecionada){
+        alert("Escolha uma resposta.");
+      } else {
+        if(this.respostaSelecionada == this.respostaCorreta){
+          alert("Resposta correta;");
+        } else {
+          alert("Resposta Incorreta.");
+        }
+      }
+    }
+  },
+
+  created() {
+    this.axios
+      .get('https://opentdb.com/api.php?amount=1&category=18')
+      .then((response) => {
+        this.pergunta = response.data.results[0].question;
+        this.respostaCorreta = response.data.results[0].correct_answer;
+        this.respostasIncorretas = response.data.results[0].incorrect_answers;
+
+        console.log(this.pergunta)
+        console.log(this.respostaCorreta)
+        console.log(this.respostaIncorreta)
+      })
   }
+
 }
 </script>
 
