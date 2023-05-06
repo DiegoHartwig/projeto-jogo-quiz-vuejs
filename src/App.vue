@@ -4,11 +4,19 @@
     <h1 v-html="this.pergunta"></h1>
 
     <template v-for="(resposta, index) in this.respostas" :key="index">
-      <input type="radio" name="opcoes" :value="resposta" v-model="this.respostaSelecionada"/>
+      <input :disabled="this.respostaEnviada" type="radio" name="opcoes" :value="resposta"
+        v-model="this.respostaSelecionada" />
       <label v-html="resposta"></label><br>
     </template>
 
-    <button @click="this.enviarResposta" class="salvar" type="button">Enviar</button>
+    <button v-if="!this.respostaEnviada" @click="this.enviarResposta" class="salvar" type="button">Enviar</button>
+
+    <section v-if="this.respostaEnviada" class="result">
+      <h4 v-if="this.respostaCorreta == this.respostaSelecionada">&#9989; Parabéns! A resposta {{ this.respostaCorreta
+      }} está correta!</h4>
+      <h4 v-else>&#10060; Sinto muito, a resposta certa é {{ this.respostaCorreta }}.</h4>
+      <button class="salvar" type="button">Próxima Pergunta </button>
+    </section>
 
   </template>
 </template>
@@ -23,7 +31,8 @@ export default {
       pergunta: undefined,
       respostasIncorretas: undefined,
       respostaCorreta: undefined,
-      respostaSelecionada: undefined
+      respostaSelecionada: undefined,
+      respostaEnviada: false
     }
   },
 
@@ -35,15 +44,16 @@ export default {
     }
   },
 
-  methods:{
-    enviarResposta(){
-      if(!this.respostaSelecionada){
+  methods: {
+    enviarResposta() {
+      if (!this.respostaSelecionada) {
         alert("Escolha uma resposta.");
       } else {
-        if(this.respostaSelecionada == this.respostaCorreta){
-          alert("Resposta correta;");
+        this.respostaEnviada = true;
+        if (this.respostaSelecionada == this.respostaCorreta) {
+          console.log("Resposta correta;");
         } else {
-          alert("Resposta Incorreta.");
+          console.log("Resposta Incorreta.");
         }
       }
     }
