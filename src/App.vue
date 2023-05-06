@@ -1,4 +1,6 @@
 <template>
+  <PlacarResultado :pontosJogador = "this.pontosJogador" :pontosComputador="this.pontosComputador"/>
+
   <template v-if="this.pergunta">
 
     <h1 v-html="this.pergunta"></h1>
@@ -12,10 +14,13 @@
     <button v-if="!this.respostaEnviada" @click="this.enviarResposta" class="salvar" type="button">Enviar</button>
 
     <section v-if="this.respostaEnviada" class="result">
-      <h4 v-if="this.respostaCorreta == this.respostaSelecionada">&#9989; Parabéns! A resposta {{ this.respostaCorreta
-      }} está correta!</h4>
-      <h4 v-else>&#10060; Sinto muito, a resposta certa é {{ this.respostaCorreta }}.</h4>
-      <button class="salvar" type="button">Próxima Pergunta </button>
+      <h4 v-if="this.respostaCorreta == this.respostaSelecionada"
+        v-html="'&#9989; Parabéns! A resposta ' + this.respostaCorreta + ' está correta!'"></h4>
+
+      <h4 v-else v-html="'&#10060; Sinto muito, a resposta correta é ' + this.respostaCorreta + '.'"></h4>
+
+      <button @click=" this.buscarProximaPergunta()" class="salvar" type="button">Próxima Pergunta </button>
+
     </section>
 
   </template>
@@ -23,8 +28,10 @@
 
 <script>
 
+import PlacarResultado from '@/components/PlacarResultado.vue';
+
 export default {
-  name: 'App',
+  name: "App",
 
   data() {
     return {
@@ -32,10 +39,11 @@ export default {
       respostasIncorretas: undefined,
       respostaCorreta: undefined,
       respostaSelecionada: undefined,
-      respostaEnviada: false
-    }
+      respostaEnviada: false,
+      pontosJogador: 0,
+      pontosComputador: 0
+    };
   },
-
   computed: {
     respostas() {
       var respostas = JSON.parse(JSON.stringify(this.respostasIncorretas));
@@ -43,36 +51,38 @@ export default {
       return respostas;
     }
   },
-
   methods: {
     enviarResposta() {
       if (!this.respostaSelecionada) {
         alert("Escolha uma resposta.");
-      } else {
+      }
+      else {
         this.respostaEnviada = true;
         if (this.respostaSelecionada == this.respostaCorreta) {
-          console.log("Resposta correta;");
-        } else {
-          console.log("Resposta Incorreta.");
+          this.pontosJogador++;
+        }
+        else {
+          this.pontosComputador++;
         }
       }
+    },
+    buscarProximaPergunta() {
+      this.respostaEnviada = false;
+      this.respostaSelecionada = undefined;
+      this.pergunta = undefined;
+      this.axios
+        .get("https://opentdb.com/api.php?amount=1&category=18")
+        .then((response) => {
+          this.pergunta = response.data.results[0].question;
+          this.respostaCorreta = response.data.results[0].correct_answer;
+          this.respostasIncorretas = response.data.results[0].incorrect_answers;
+        });
     }
   },
-
   created() {
-    this.axios
-      .get('https://opentdb.com/api.php?amount=1&category=18')
-      .then((response) => {
-        this.pergunta = response.data.results[0].question;
-        this.respostaCorreta = response.data.results[0].correct_answer;
-        this.respostasIncorretas = response.data.results[0].incorrect_answers;
-
-        console.log(this.pergunta)
-        console.log(this.respostaCorreta)
-        console.log(this.respostaIncorreta)
-      })
-  }
-
+    this.buscarProximaPergunta();
+  },
+  components: { PlacarResultado }
 }
 </script>
 
